@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fraction Cylinder – Jordan's Water Game (Words)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #f4f4f4;
+      --card: #ffffff;
+      --text: #222222;
+      --accent: #1976d2;
+      --accent-soft: #e3f2fd;
+      --border: #cccccc;
+      --correct: #2e7d32;
+      --incorrect: #c62828;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 960px;
+      width: 100%;
+      margin: 24px;
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      padding: 20px 24px 28px;
+    }
+
+    @media (min-width: 900px) {
+      .app {
+        padding: 24px 32px 32px;
+      }
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 1.8rem;
+    }
+
+    .subtitle {
+      margin: 0 0 16px;
+      font-size: 0.95rem;
+      color: #555;
+    }
+
+    .top-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+      justify-content: space-between;
+    }
+
+    .fraction-label {
+      font-size: 1.2rem;
+    }
+
+    .fraction-word {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .stage-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: #0d47a1;
+      font-size: 0.85rem;
+    }
+
+    .main-layout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 8px;
+    }
+
+    .cylinder-card,
+    .control-card {
+      flex: 1 1 280px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fafafa;
+      padding: 14px 16px;
+    }
+
+    .cylinder-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .cylinder {
+      width: 140px;
+      height: 360px;
+      border-radius: 70px;
+      background: linear-gradient(to right, #fdfdfd, #f1f1f1);
+      border: 2px solid #aaa;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      padding: 4px 0;
+    }
+
+    .cylinder-inner {
+      position: relative;
+      width: 70px;
+      height: 100%;
+      border-radius: 35px;
+      overflow: hidden;
+      background: linear-gradient(to bottom, #ffffff, #f7f7f7);
+      cursor: pointer;
+    }
+
+    .water {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 0%;
+      background: linear-gradient(to top, rgba(25,118,210,0.7), rgba(25,118,210,0.25));
+      transition: height 0.15s;
+    }
+
+    .marks-layer,
+    .ideal-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .mark-line {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: rgba(0,0,0,0.7);
+    }
+
+    .ideal-line {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: rgba(0,0,0,0.4);
+      border-top: 1px dashed rgba(0,0,0,0.4);
+    }
+
+    .ideal-label {
+      position: absolute;
+      right: 2px;
+      font-size: 0.55rem;
+      color: #444;
+    }
+
+    .instructions {
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .feedback {
+      margin-top: 8px;
+      min-height: 24px;
+      font-size: 0.95rem;
+    }
+
+    .feedback.correct {
+      color: var(--correct);
+      font-weight: 600;
+    }
+
+    .feedback.incorrect {
+      color: var(--incorrect);
+      font-weight: 600;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    .action-btn {
+      cursor: pointer;
+      border-radius: 999px;
+      border: none;
+      padding: 8px 16px;
+      font-size: 0.95rem;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.16);
+      transition: background 0.15s, transform 0.05s, opacity 0.15s;
+    }
+
+    .action-btn.secondary {
+      background: #e0e0e0;
+      color: #333;
+      box-shadow: none;
+    }
+
+    .action-btn:disabled {
+      opacity: 0.55;
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .action-btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .status-text {
+      font-size: 0.85rem;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    .footer {
+      margin-top: 18px;
+      font-size: 0.8rem;
+      color: #777;
+      text-align: right;
+    }
+
+    .small-note {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Fraction Cylinder – Water Level Game (Words)</h1>
+    <p class="subtitle">
+      Jordan marks equal parts on the cylinder, then fills it to match the fraction written in words.
+    </p>
+
+    <div class="top-row">
+      <div>
+        <span class="fraction-label">Target fraction:</span>
+        <span id="fractionDisplay" class="fraction-word">three-fifths</span>
+      </div>
+      <div>
+        <span class="stage-tag">
+          <span id="stageText">Stage 1: Divide the cylinder</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="main-layout">
+      <div class="cylinder-card">
+        <div class="instructions" id="instructions">
+          Click inside the cylinder to place marks and divide it into equal parts.
+        </div>
+        <div class="cylinder-wrapper">
+          <div class="cylinder">
+            <div class="cylinder-inner" id="cylinderInner">
+              <div class="water" id="water"></div>
+              <div class="ideal-layer" id="idealLayer"></div>
+              <div class="marks-layer" id="marksLayer"></div>
+            </div>
+          </div>
+        </div>
+        <div class="small-note">
+          Tip: In Stage 1, every click adds a line. In Stage 2, a click sets the water level.
+        </div>
+      </div>
+
+      <div class="control-card">
+        <div class="instructions">
+          1. Stage 1 – divide the cylinder into equal parts.  
+          2. Stage 2 – set the water level to match the fraction in words.
+        </div>
+        <div class="button-row">
+          <button type="button" class="action-btn secondary" id="resetMarksBtn">Reset marks</button>
+          <button type="button" class="action-btn" id="checkMarksBtn">Check divisions</button>
+          <button type="button" class="action-btn" id="checkWaterBtn" disabled>Check water level</button>
+          <button type="button" class="action-btn secondary" id="newFractionBtn">New fraction</button>
+        </div>
+        <div class="status-text" id="statusText"></div>
+        <div class="feedback" id="feedback"></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Mr. McLean Math – Fraction Cylinder Game (Words)
+    </div>
+  </div>
+
+  <script>
+    // ---------- Utilities ----------
+    function sample(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function numberToWord1to10(n) {
+      switch (n) {
+        case 1: return "one";
+        case 2: return "two";
+        case 3: return "three";
+        case 4: return "four";
+        case 5: return "five";
+        case 6: return "six";
+        case 7: return "seven";
+        case 8: return "eight";
+        case 9: return "nine";
+        case 10: return "ten";
+        default: return String(n);
+      }
+    }
+
+    function fractionToWords(num, den) {
+      const numWord = numberToWord1to10(num);
+      let base;
+      switch (den) {
+        case 2: base = "half"; break;
+        case 3: base = "third"; break;
+        case 4: base = "quarter"; break;
+        case 5: base = "fifth"; break;
+        case 6: base = "sixth"; break;
+        case 8: base = "eighth"; break;
+        case 10: base = "tenth"; break;
+        default: base = "part";
+      }
+
+      if (num === 1) {
+        // singular forms
+        if (den === 2) return numWord + "-half";
+        return numWord + "-" + base;
+      } else {
+        // plural forms
+        let pluralBase;
+        if (den === 2) pluralBase = "halves";
+        else if (den === 4) pluralBase = "quarters";
+        else pluralBase = base + "s";
+        return numWord + "-" + pluralBase;
+      }
+    }
+
+    // ---------- DOM ----------
+    const cylinderInner = document.getElementById("cylinderInner");
+    const waterEl = document.getElementById("water");
+    const marksLayer = document.getElementById("marksLayer");
+    const idealLayer = document.getElementById("idealLayer");
+
+    const resetMarksBtn = document.getElementById("resetMarksBtn");
+    const checkMarksBtn = document.getElementById("checkMarksBtn");
+    const checkWaterBtn = document.getElementById("checkWaterBtn");
+    const newFractionBtn = document.getElementById("newFractionBtn");
+
+    const instructionsEl = document.getElementById("instructions");
+    const stageTextEl = document.getElementById("stageText");
+    const feedbackEl = document.getElementById("feedback");
+    const statusTextEl = document.getElementById("statusText");
+    const fractionDisplayEl = document.getElementById("fractionDisplay");
+
+    // ---------- State ----------
+    const DEN_CHOICES = [2, 3, 4, 5, 6, 8, 10];
+
+    let currentFraction = { num: 3, den: 5, words: "three-fifths" };
+    let stage = "divide"; // "divide" or "fill"
+    let marks = []; // { ratio: 0..1, lineEl }
+    let waterRatio = 0; // from bottom (0 = empty, 1 = full)
+
+    // ---------- Fraction + stage setup ----------
+    function updateFractionLabel() {
+      fractionDisplayEl.textContent = currentFraction.words;
+    }
+
+    function newRandomFraction() {
+      const den = sample(DEN_CHOICES);
+      const num = Math.floor(Math.random() * (den - 1)) + 1; // 1..den-1
+      const words = fractionToWords(num, den);
+
+      currentFraction = { num, den, words };
+      updateFractionLabel();
+
+      stage = "divide";
+      clearMarks();
+      clearIdealLines();
+      setWaterRatio(0);
+      updateTextsForStage();
+      feedbackEl.textContent = "";
+      feedbackEl.className = "feedback";
+      statusTextEl.textContent = "";
+      checkWaterBtn.disabled = true;
+
+      statusTextEl.textContent =
+        "Marks placed: 0 / " + (currentFraction.den - 1) +
+        " needed for " + currentFraction.den + " equal parts.";
+    }
+
+    function updateTextsForStage() {
+      if (stage === "divide") {
+        stageTextEl.textContent = "Stage 1: Divide the cylinder";
+        instructionsEl.textContent =
+          "Click inside the cylinder to place horizontal marks and divide it into " +
+          currentFraction.den + " equal parts. You need " + (currentFraction.den - 1) +
+          " marks.";
+      } else {
+        stageTextEl.textContent = "Stage 2: Fill to the numerator";
+        instructionsEl.textContent =
+          "Click inside the cylinder to set the water level to " +
+          currentFraction.words + " of the cylinder.";
+      }
+    }
+
+    // ---------- Marks & ideal lines ----------
+    function clearMarks() {
+      marks = [];
+      marksLayer.innerHTML = "";
+    }
+
+    function clearIdealLines() {
+      idealLayer.innerHTML = "";
+    }
+
+    function addMarkAtRatio(ratio) {
+      // ratio is 0..1 from top
+      const lineEl = document.createElement("div");
+      lineEl.className = "mark-line";
+      lineEl.style.top = (ratio * 100) + "%";
+      marksLayer.appendChild(lineEl);
+      marks.push({ ratio, lineEl });
+
+      statusTextEl.textContent =
+        "Marks placed: " + marks.length + " / " + (currentFraction.den - 1) +
+        " needed for " + currentFraction.den + " equal parts.";
+    }
+
+    function showIdealLines() {
+      idealLayer.innerHTML = "";
+      const d = currentFraction.den;
+      for (let i = 1; i < d; i++) {
+        const ratio = i / d; // from top
+
+        const lineEl = document.createElement("div");
+        lineEl.className = "ideal-line";
+        lineEl.style.top = (ratio * 100) + "%";
+
+        const label = document.createElement("div");
+        label.className = "ideal-label";
+        label.style.top = "calc(" + (ratio * 100) + "% - 7px)";
+        label.textContent = i + "/" + d;
+
+        idealLayer.appendChild(lineEl);
+        idealLayer.appendChild(label);
+      }
+    }
+
+    // ---------- Water ----------
+    function setWaterRatio(ratioFromBottom) {
+      // clamp 0..1
+      if (ratioFromBottom < 0) ratioFromBottom = 0;
+      if (ratioFromBottom > 1) ratioFromBottom = 1;
+      waterRatio = ratioFromBottom;
+      const heightPercent = ratioFromBottom * 100;
+      waterEl.style.height = heightPercent + "%";
+    }
+
+    // ---------- Click handling ----------
+    cylinderInner.addEventListener("click", (e) => {
+      const rect = cylinderInner.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const height = rect.height;
+      if (height <= 0) return;
+
+      const ratioFromTop = y / height;
+      const ratioFromBottom = 1 - ratioFromTop;
+
+      if (stage === "divide") {
+        if (marks.length >= currentFraction.den - 1) {
+          statusTextEl.textContent =
+            "You already placed " + (currentFraction.den - 1) +
+            " marks. Click 'Check divisions'.";
+          return;
+        }
+        addMarkAtRatio(ratioFromTop);
+      } else if (stage === "fill") {
+        setWaterRatio(ratioFromBottom);
+        feedbackEl.textContent = "";
+        feedbackEl.className = "feedback";
+        statusTextEl.textContent =
+          "Water level set. Click 'Check water level' to see how close you are to " +
+          currentFraction.words + ".";
+      }
+    });
+
+    // ---------- Check divisions ----------
+    function checkDivisions() {
+      if (stage !== "divide") {
+        feedbackEl.className = "feedback incorrect";
+        feedbackEl.textContent =
+          "You are in Stage 2 now. Use 'Reset marks' and 'New fraction' to start again.";
+        return;
+      }
+
+      const neededMarks = currentFraction.den - 1;
+      if (marks.length < neededMarks) {
+        feedbackEl.className = "feedback incorrect";
+        feedbackEl.textContent =
+          "You have " + marks.length + " marks. You need " + neededMarks +
+          " marks to split into " + currentFraction.den + " equal parts.";
+        return;
+      }
+
+      // Sort by vertical ratio
+      marks.sort((a, b) => a.ratio - b.ratio);
+
+      const d = currentFraction.den;
+      const idealPositions = [];
+      for (let i = 1; i < d; i++) {
+        idealPositions.push(i / d);
+      }
+
+      let maxError = 0;
+      for (let i = 0; i < idealPositions.length; i++) {
+        const err = Math.abs(marks[i].ratio - idealPositions[i]);
+        if (err > maxError) maxError = err;
+      }
+
+      // tolerance: within about 5% of height
+      const tolerance = 0.05;
+
+      showIdealLines();
+
+      if (maxError <= tolerance) {
+        feedbackEl.className = "feedback correct";
+        feedbackEl.textContent =
+          "Nice job! Your divisions are very close to equal parts. Now fill the cylinder to " +
+          currentFraction.words + ".";
+        stage = "fill";
+        updateTextsForStage();
+        checkWaterBtn.disabled = false;
+        statusTextEl.textContent =
+          "Click in the cylinder to set the water level to " +
+          currentFraction.words + ".";
+      } else {
+        feedbackEl.className = "feedback incorrect";
+        feedbackEl.textContent =
+          "Your marks are a bit uneven. The dashed lines show perfect positions. You can adjust by resetting and trying again.";
+      }
+    }
+
+    // ---------- Check water ----------
+    function checkWaterLevel() {
+      if (stage !== "fill") {
+        feedbackEl.className = "feedback incorrect";
+        feedbackEl.textContent =
+          "First divide the cylinder and click 'Check divisions'. Then you can check the water level.";
+        return;
+      }
+
+      const target = currentFraction.num / currentFraction.den;
+      const diff = Math.abs(waterRatio - target);
+      const tolerance = 0.05; // about 5%
+
+      if (diff <= tolerance) {
+        feedbackEl.className = "feedback correct";
+        feedbackEl.textContent =
+          "Excellent! Your water level is very close to " +
+          currentFraction.words + " (" +
+          currentFraction.num + "/" + currentFraction.den +
+          ") of the cylinder.";
+      } else {
+        feedbackEl.className = "feedback incorrect";
+        const direction = waterRatio > target ? "a bit too high" : "a bit too low";
+        feedbackEl.textContent =
+          "Your water is " + direction + ". Try to match " +
+          currentFraction.words + " more closely and check again.";
+      }
+    }
+
+    // ---------- Button handlers ----------
+    resetMarksBtn.addEventListener("click", () => {
+      clearMarks();
+      clearIdealLines();
+      feedbackEl.textContent = "";
+      feedbackEl.className = "feedback";
+      stage = "divide";
+      updateTextsForStage();
+      setWaterRatio(0);
+      checkWaterBtn.disabled = true;
+      statusTextEl.textContent =
+        "Marks placed: 0 / " + (currentFraction.den - 1) +
+        " needed for " + currentFraction.den + " equal parts.";
+    });
+
+    checkMarksBtn.addEventListener("click", () => {
+      checkDivisions();
+    });
+
+    checkWaterBtn.addEventListener("click", () => {
+      checkWaterLevel();
+    });
+
+    newFractionBtn.addEventListener("click", () => {
+      newRandomFraction();
+    });
+
+    // ---------- Init ----------
+    function init() {
+      newRandomFraction();
+    }
+
+    init();
+  </script>
+</body>
+</html>
