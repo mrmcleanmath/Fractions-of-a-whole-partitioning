@@ -356,11 +356,9 @@
       }
 
       if (num === 1) {
-        // singular forms
         if (den === 2) return numWord + "-half";
         return numWord + "-" + base;
       } else {
-        // plural forms
         let pluralBase;
         if (den === 2) pluralBase = "halves";
         else if (den === 4) pluralBase = "quarters";
@@ -391,7 +389,7 @@
 
     let currentFraction = { num: 3, den: 5, words: "three-fifths" };
     let stage = "divide"; // "divide" or "fill"
-    let marks = []; // { ratio: 0..1, lineEl }
+    let marks = []; // { ratio: 0..1, lineEl }  (ratio from top)
     let waterRatio = 0; // from bottom (0 = empty, 1 = full)
 
     // ---------- Fraction + stage setup ----------
@@ -460,19 +458,21 @@
         " needed for " + currentFraction.den + " equal parts.";
     }
 
+    // UPDATED: labels now go from bottom up (1/den near bottom, (den-1)/den near top)
     function showIdealLines() {
       idealLayer.innerHTML = "";
       const d = currentFraction.den;
       for (let i = 1; i < d; i++) {
-        const ratio = i / d; // from top
+        const fractionFromBottom = i / d;          // 0..1, 0 at bottom, 1 at top
+        const ratioFromTop = 1 - fractionFromBottom; // convert to top-based for CSS
 
         const lineEl = document.createElement("div");
         lineEl.className = "ideal-line";
-        lineEl.style.top = (ratio * 100) + "%";
+        lineEl.style.top = (ratioFromTop * 100) + "%";
 
         const label = document.createElement("div");
         label.className = "ideal-label";
-        label.style.top = "calc(" + (ratio * 100) + "% - 7px)";
+        label.style.top = "calc(" + (ratioFromTop * 100) + "% - 7px)";
         label.textContent = i + "/" + d;
 
         idealLayer.appendChild(lineEl);
@@ -482,7 +482,6 @@
 
     // ---------- Water ----------
     function setWaterRatio(ratioFromBottom) {
-      // clamp 0..1
       if (ratioFromBottom < 0) ratioFromBottom = 0;
       if (ratioFromBottom > 1) ratioFromBottom = 1;
       waterRatio = ratioFromBottom;
@@ -536,7 +535,7 @@
         return;
       }
 
-      // Sort by vertical ratio
+      // Sort by vertical ratio from top
       marks.sort((a, b) => a.ratio - b.ratio);
 
       const d = currentFraction.den;
